@@ -1,28 +1,28 @@
 # Aurora PostgreSQL Cluster
 resource "aws_rds_cluster" "main" {
-  cluster_identifier      = "${var.project_name}-cluster"
-  engine                  = "aurora-postgresql"
-  engine_version          = var.database_engine_version
-  database_name           = var.database_name
-  master_username         = var.database_username
-  master_password         = var.database_password
-  db_subnet_group_name    = aws_db_subnet_group.main.name
-  vpc_security_group_ids  = [aws_security_group.rds.id]
-  backup_retention_period = var.backup_retention_period
-  skip_final_snapshot     = false
-  final_snapshot_identifier = "${var.project_name}-cluster-snapshot-${formatdate("YYYY-MM-DD-hhmm", timestamp())}"
+  cluster_identifier              = "${var.project_name}-cluster"
+  engine                          = "aurora-postgresql"
+  engine_version                  = var.database_engine_version
+  database_name                   = var.database_name
+  master_username                 = var.database_username
+  master_password                 = var.database_password
+  db_subnet_group_name            = aws_db_subnet_group.main.name
+  db_cluster_parameter_group_name = aws_rds_cluster_parameter_group.main.name
+  vpc_security_group_ids          = [aws_security_group.rds.id]
+  backup_retention_period         = var.backup_retention_period
+  skip_final_snapshot             = false
+  final_snapshot_identifier       = "${var.project_name}-cluster-snapshot-${formatdate("YYYY-MM-DD-hhmm", timestamp())}"
 
   # Enable backups and automatic minor version upgrades
   enabled_cloudwatch_logs_exports = ["postgresql"]
-  storage_encrypted              = true
-  enable_http_endpoint           = false
-  enable_iam_database_authentication = true
+  storage_encrypted               = true
+  enable_http_endpoint            = false
 
   tags = {
     Name = "${var.project_name}-aurora-cluster"
   }
 
-  depends_on = [aws_db_subnet_group.main]
+  depends_on = [aws_db_subnet_group.main, aws_rds_cluster_parameter_group.main]
 }
 
 # Aurora PostgreSQL Instance 1
@@ -33,11 +33,10 @@ resource "aws_rds_cluster_instance" "main-1" {
   engine_version      = aws_rds_cluster.main.engine_version
   identifier         = "${var.project_name}-instance-1"
 
-  performance_insights_enabled    = true
-  performance_insights_retention_period = 7
-  monitoring_interval             = 60
-  monitoring_role_arn            = aws_iam_role.rds_monitoring.arn
-  enable_performance_insights     = true
+  performance_insights_enabled            = true
+  performance_insights_retention_period   = 7
+  monitoring_interval                     = 60
+  monitoring_role_arn                     = aws_iam_role.rds_monitoring.arn
 
   tags = {
     Name = "${var.project_name}-aurora-instance-1"
@@ -52,11 +51,10 @@ resource "aws_rds_cluster_instance" "main-2" {
   engine_version      = aws_rds_cluster.main.engine_version
   identifier         = "${var.project_name}-instance-2"
 
-  performance_insights_enabled    = true
-  performance_insights_retention_period = 7
-  monitoring_interval             = 60
-  monitoring_role_arn            = aws_iam_role.rds_monitoring.arn
-  enable_performance_insights     = true
+  performance_insights_enabled            = true
+  performance_insights_retention_period   = 7
+  monitoring_interval                     = 60
+  monitoring_role_arn                     = aws_iam_role.rds_monitoring.arn
 
   tags = {
     Name = "${var.project_name}-aurora-instance-2"
@@ -112,23 +110,5 @@ resource "aws_rds_cluster_parameter_group" "main" {
 
   tags = {
     Name = "${var.project_name}-cluster-param-group"
-  }
-}
-
-# Update cluster to use the parameter group
-resource "aws_rds_cluster" "main_with_params" {
-  provider = aws
-
-  cluster_identifier = aws_rds_cluster.main.id
-  db_cluster_parameter_group_name = aws_rds_cluster_parameter_group.main.name
-
-  depends_on = [aws_rds_cluster.main]
-
-  lifecycle {
-    ignore_changes = [
-      master_password,
-      database_name,
-      master_username,
-    ]
   }
 }

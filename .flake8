@@ -1,0 +1,36 @@
+[flake8]
+# Configuração do Flake8
+
+# Máximo de caracteres por linha
+max-line-length = 120
+
+# Extensões habilitadas
+exclude = 
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    .terraform,
+    .pytest_cache,
+    .mypy_cache,
+    build,
+    dist,
+    *.egg-info,
+    node_modules
+
+# Ignorar alguns erros
+# E203 - Espaço antes de ':'
+# W503 - Quebra de linha antes de operador binário
+# E501 - Linha muito longa (checado por black)
+ignore = 
+    E203,
+    W503,
+    E501
+
+# Complexidade ciclomática
+max-complexity = 10
+
+# Per-file-ignores
+per-file-ignores =
+    __init__.py:F401
+    tests/*:F841,F401

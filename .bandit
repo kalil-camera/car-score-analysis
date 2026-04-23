@@ -1,0 +1,23 @@
+# Bandit configuration for security scanning
+
+assert_used:
+  skips: ["*/test_*.py", "*/tests/*"]
+
+# Tests to skip
+skips:
+  - B101 # assert_used - permitido em testes
+  - B601 # paramiko_calls
+  - B607 # partial_paramiko_calls
+
+# Exclude patterns
+exclude_dirs:
+  - ".git"
+  - ".venv"
+  - ".terraform"
+  - "__pycache__"
+  - "migrations"
+  - "node_modules"
+
+# Teste para considerar problemas de segurança graves
+severity: HIGH
+confidence: MEDIUM
