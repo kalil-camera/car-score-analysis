@@ -25,6 +25,10 @@ MANIFEST
 
 # Virtual environments
 .venv
+.env
+.env.local
+.env.dev
+.env.prod
 env/
 venv/
 ENV/

@@ -1,0 +1,88 @@
+version: "3.8"
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: pythonbackend-postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: ChangeMe123!
+      POSTGRES_DB: pythonapp
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI Application
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pythonbackend-api
+    environment:
+      DATABASE_URL: postgresql://admin:ChangeMe123!@postgres:5432/pythonapp
+      ENVIRONMENT: development
+      DEBUG: "true"
+      AWS_REGION: us-east-1
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    command: python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Background Workers
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    container_name: pythonbackend-worker
+    environment:
+      DATABASE_URL: postgresql://admin:ChangeMe123!@postgres:5432/pythonapp
+      ENVIRONMENT: development
+      WORKER_INTERVAL: 3600
+      FIPE_API_ENABLED: "true"
+      WEB_SCRAPING_ENABLED: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    command: python run_workers.py --daemon --interval 3600
+
+  # LocalStack for SQS (optional)
+  localstack:
+    image: localstack/localstack:latest
+    container_name: pythonbackend-localstack
+    ports:
+      - "4566:4566"
+    environment:
+      DEBUG: 1
+      SERVICES: sqs
+      AWS_DEFAULT_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+    volumes:
+      - localstack_data:/tmp/localstack
+
+volumes:
+  postgres_data:
+  localstack_data:
+
+networks:
+  default:
+    name: pythonbackend-network

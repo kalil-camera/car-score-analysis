@@ -1,7 +1,8 @@
 """
 Python Backend Application
 
-This is the main application package for the Python Backend infrastructure deployed on AWS.
+Distributed system for vehicle data collection, processing and analytics.
+Uses FastAPI for REST APIs and PostgreSQL for data persistence.
 """
 
 __version__ = "0.1.0"
