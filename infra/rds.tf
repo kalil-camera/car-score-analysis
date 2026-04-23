@@ -22,7 +22,7 @@ resource "aws_rds_cluster" "main" {
   }
 
   depends_on = [aws_db_subnet_group.main]
-}}
+}
 
 # Aurora PostgreSQL Instance 1
 resource "aws_rds_cluster_instance" "main-1" {
