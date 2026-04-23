@@ -87,8 +87,8 @@ resource "aws_api_gateway_stage" "main" {
   xray_tracing_enabled = true
 
   access_log_settings {
-    cloudwatch_log_group_arn = "${aws_cloudwatch_log_group.api_gateway.arn}:*"
-    format                   = "$context.requestId $context.extendedRequestId $context.identity.sourceIp $context.requestTime $context.httpMethod $context.resourcePath $context.protocol $context.status $context.responseLength"
+    destination_arn = aws_cloudwatch_log_group.api_gateway.arn
+    format          = "$context.requestId $context.extendedRequestId $context.identity.sourceIp $context.requestTime $context.httpMethod $context.resourcePath $context.protocol $context.status $context.responseLength"
   }
 
   depends_on = [aws_api_gateway_account.main]
