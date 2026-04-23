@@ -16,14 +16,13 @@ resource "aws_rds_cluster" "main" {
   enabled_cloudwatch_logs_exports = ["postgresql"]
   storage_encrypted              = true
   enable_http_endpoint           = false
-  enable_iam_database_authentication = true
 
   tags = {
     Name = "${var.project_name}-aurora-cluster"
   }
 
   depends_on = [aws_db_subnet_group.main]
-}
+}}
 
 # Aurora PostgreSQL Instance 1
 resource "aws_rds_cluster_instance" "main-1" {

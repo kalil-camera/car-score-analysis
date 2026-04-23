@@ -86,6 +86,13 @@ resource "aws_api_gateway_stage" "main" {
 
   xray_tracing_enabled = true
 
+  access_log_settings {
+    cloudwatch_log_group_arn = "${aws_cloudwatch_log_group.api_gateway.arn}:*"
+    format                   = "$context.requestId $context.extendedRequestId $context.identity.sourceIp $context.requestTime $context.httpMethod $context.resourcePath $context.protocol $context.status $context.responseLength"
+  }
+
+  depends_on = [aws_api_gateway_account.main]
+
   tags = {
     Name = "${var.project_name}-${var.api_gateway_stage}-stage"
   }
@@ -159,7 +166,6 @@ resource "aws_api_gateway_method_settings" "main" {
     metrics_enabled        = true
     data_trace_enabled     = true
     logging_level          = "INFO"
-    cloudwatch_role_arn    = aws_iam_role.api_gateway_cloudwatch.arn
   }
 }
 
