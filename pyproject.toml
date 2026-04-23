@@ -1,0 +1,75 @@
+[tool.black]
+line-length = 120
+target-version = ['py311', 'py312']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | \.terraform
+  | _build
+  | buck-out
+  | build
+  | dist
+  | migrations
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 120
+skip_glob = [".venv", ".terraform", "migrations"]
+known_first_party = ["app"]
+multi_line_mode = 3
+include_trailing_comma = true
+
+[tool.pylint.messages_control]
+disable = [
+    "C0330",  # Wrong hanging indentation before block
+    "C0326",  # Bad whitespace
+    "C0103",  # Invalid name
+    "R0913",  # Too many arguments
+    "R0914",  # Too many local variables
+]
+
+[tool.pylint.format]
+max-line-length = 120
+
+[tool.pylint.typecheck]
+generated-members = ["sqlalchemy.*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "slow: Slow running tests",
+    "database: Tests that require database",
+    "asyncio: Asyncio tests",
+]
+
+[tool.coverage.run]
+source = ["app"]
+omit = [
+    "*/tests/*",
+    "*/migrations/*",
+    "*/__init__.py",
+]
+
+[build-system]
+requires = ["setuptools>=65.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pythonbackend"
+version = "0.1.0"
+description = "Python Backend with AWS Infrastructure"
+requires-python = ">=3.11"
+dependencies = []
