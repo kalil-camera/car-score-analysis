@@ -1,8 +1,10 @@
-# Python Backend with AWS Infrastructure
+# Car Score
 
-Complete serverless backend infrastructure on AWS with Terraform IaC and GitHub Actions CI/CD pipeline.
+Aggregates, processes, and disseminates data regarding vehicle price history, reliability index, and safety ratings. 
 
-## 🏗️ Architecture
+Backend: Python with Fast API
+SQL Database.
+Infra is AWS with Terraform.
 
 ### Infrastructure Components
 
@@ -23,7 +25,7 @@ Complete serverless backend infrastructure on AWS with Terraform IaC and GitHub 
 - **Security Scanning**: Trivy vulnerability scanner
 - **PR Comments**: Terraform plan comments on PRs
 
-## 📁 Project Structure
+##Project Structure
 
 ```
 .
@@ -61,7 +63,7 @@ Complete serverless backend infrastructure on AWS with Terraform IaC and GitHub 
 └── README.md                       # This file
 ```
 
-## 🚀 Quick Start
+##  Run on local machine
 
 ### Prerequisites
 
@@ -136,7 +138,7 @@ terraform apply
 terraform output deployment_info
 ```
 
-## 📋 GitHub Actions CI Pipeline
+##  GitHub Actions CI Pipeline
 
 The pipeline automatically runs on:
 
@@ -211,7 +213,7 @@ pytest --cov=app --cov-report=html
 open htmlcov/index.html  # View in browser
 ```
 
-## 🧹 Code Quality
+## Code Quality
 
 ### Linting Tools
 
@@ -242,19 +244,6 @@ pre-commit run --all-files
 - `.editorconfig` - Editor settings
 - `.pre-commit-config.yaml` - Pre-commit hooks
 
-## 📊 Infrastructure
-
-### Terraform Files
-
-See [infra/README.md](infra/README.md) for detailed infrastructure documentation.
-
-### Key Resources
-
-- **Database**: Aurora PostgreSQL cluster with 2 instances
-- **Load Balancer**: ALB with target group and health checks
-- **Containers**: ECS Fargate service with auto-scaling
-- **Queue**: SQS with Dead Letter Queue
-- **API**: API Gateway with proxy to ALB
 
 ### Useful Commands
 
@@ -277,7 +266,7 @@ terraform fmt -recursive
 terraform validate
 ```
 
-## 🔐 Security
+## Security
 
 ### Pre-Built Security Features
 
@@ -292,7 +281,7 @@ terraform validate
 
 For sensitive values (database passwords, API keys):
 
-1. **Local Development**: Use `.env` file (add to `.gitignore`)
+1. **Local Development**: Use `.env` file 
 2. **GitHub Secrets**: Store in repository secrets
 3. **AWS Secrets Manager**: For production secrets
 
@@ -312,7 +301,7 @@ Includes:
 - tfsec (Terraform security)
 - Private key detection
 
-## 📝 Development Workflow
+##  Development Workflow
 
 1. **Create feature branch**
 
@@ -344,7 +333,7 @@ git push origin feature/my-feature
 5. **Merge to main**
    - Infrastructure updates deployed after merge
 
-## 📚 Documentation
+## Documentation
 
 - [Infrastructure Documentation](infra/README.md)
 - [CI/CD Pipeline Documentation](CI.md)
@@ -356,7 +345,7 @@ git push origin feature/my-feature
 
 ### Tests failing locally
 
-1. Check Python version (3.11+)
+1. Check Python version (3.13+)
 2. Install all dependencies: `pip install -r requirements.txt -r requirements-test.txt`
 3. Set environment variables if needed
 4. Clear cache: `rm -rf .pytest_cache __pycache__`
@@ -389,23 +378,3 @@ All services log to CloudWatch:
 - `/aws/alb/pythonbackend` - Load balancer logs
 - `/aws/apigateway/pythonbackend` - API Gateway logs
 - RDS performance insights and enhanced monitoring
-
-## 🤝 Contributing
-
-1. Follow the development workflow above
-2. Ensure all tests pass locally
-3. Ensure linting passes locally
-4. Create descriptive PR with clear explanation
-5. Address review comments
-
-## 📄 License
-
-[Add your license here]
-
-## 👥 Authors
-
-- Your Name (@yourusername)
-
-## 📞 Support
-
-[Add support information here]
