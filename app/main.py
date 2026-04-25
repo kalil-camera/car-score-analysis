@@ -1,6 +1,4 @@
-"""
-Main FastAPI application
-"""
+"""Main FastAPI application - Clean Architecture entry point"""
 import logging
 from contextlib import asynccontextmanager
 from datetime import datetime
@@ -9,12 +7,17 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
-from app.api import router as vehicles_router
 from app.config import settings
 from app.database import create_tables, get_db
-from app.models import DataCollectionLog
-from app.schemas import HealthResponse
-from app.workers import run_all_workers
+from app.container import initialize_container
+from app.presentation import (
+    vehicle_router,
+    price_router,
+    safety_router,
+    reliability_router,
+)
+from app.application import HealthResponse
+from app.infrastructure.persistence.orm_models import DataCollectionLogORM
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -23,24 +26,20 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Manage app startup and shutdown"""
+    """Application lifecycle management"""
     # Startup
-    logger.info("Starting up application...")
+    logger.info("🚀 Starting application...")
     create_tables()
-    logger.info("Database tables created/verified")
-
-    # Run workers on startup (optional)
-    try:
-        logger.info("Running initial data workers...")
-        await run_all_workers()
-        logger.info("Initial workers completed")
-    except Exception as e:
-        logger.error(f"Error running workers: {e}")
-
+    logger.info("✅ Database initialized")
+    
+    # Initialize DI Container
+    initialize_container(get_db)
+    logger.info("✅ DI Container initialized")
+    
     yield
-
+    
     # Shutdown
-    logger.info("Shutting down application...")
+    logger.info("🛑 Shutting down application...")
 
 
 # Create FastAPI app
@@ -49,6 +48,9 @@ app = FastAPI(
     description=settings.api_description,
     version=settings.api_version,
     lifespan=lifespan,
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
 )
 
 # Add CORS middleware
@@ -61,17 +63,22 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(vehicles_router)
+app.include_router(vehicle_router)
+app.include_router(price_router)
+app.include_router(safety_router)
+app.include_router(reliability_router)
 
 
 @app.get("/", tags=["root"])
 async def root():
-    """Root endpoint"""
+    """Root endpoint - API information"""
     return {
         "name": settings.app_name,
         "version": settings.api_version,
+        "environment": settings.environment,
         "docs": "/docs",
         "redoc": "/redoc",
+        "openapi": "/openapi.json",
     }
 
 
@@ -83,18 +90,19 @@ async def health_check(db: Session = Depends(get_db)):
         db.execute("SELECT 1")
         db_status = "healthy"
     except Exception as e:
-        logger.error(f"Health check failed: {e}")
+        logger.error(f"❌ Health check failed: {e}")
         db_status = "unhealthy"
-
-    # Get recent worker status
-    recent_logs = db.query(DataCollectionLog).order_by(
-        DataCollectionLog.created_at.desc()
+    
+    # Get recent worker executions
+    recent_logs = db.query(DataCollectionLogORM).order_by(
+        DataCollectionLogORM.created_at.desc()
     ).limit(3).all()
-
-    workers_status = {
-        log.worker_name: log.status for log in recent_logs
-    }
-
+    
+    workers_status = {}
+    for log in recent_logs:
+        if log.worker_name not in workers_status:
+            workers_status[log.worker_name] = log.status
+    
     return HealthResponse(
         status="healthy" if db_status == "healthy" else "degraded",
         version=settings.api_version,
@@ -104,49 +112,16 @@ async def health_check(db: Session = Depends(get_db)):
     )
 
 
-@app.get("/workers/logs", tags=["workers"])
-async def get_worker_logs(
-    limit: int = 50,
-    db: Session = Depends(get_db),
-):
-    """Get recent worker execution logs"""
-    logs = db.query(DataCollectionLog).order_by(
-        DataCollectionLog.created_at.desc()
-    ).limit(limit).all()
-
-    return [
-        {
-            "id": log.id,
-            "worker": log.worker_name,
-            "status": log.status,
-            "processed": log.items_processed,
-            "failed": log.items_failed,
-            "start": log.start_time,
-            "end": log.end_time,
-            "timestamp": log.created_at,
-        }
-        for log in logs
-    ]
-
-
-@app.post("/workers/run", tags=["workers"])
-async def trigger_workers():
-    """Manually trigger workers"""
-    try:
-        await run_all_workers()
-        return {
-            "status": "success",
-            "message": "Workers executed successfully",
-            "timestamp": datetime.utcnow(),
-        }
-    except Exception as e:
-        logger.error(f"Error running workers: {e}")
-        return {
-            "status": "failed",
-            "message": str(e),
-            "timestamp": datetime.utcnow(),
-        }
-
+if __name__ == "__main__":
+    import uvicorn
+    
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=8000,
+        reload=settings.debug,
+        log_level="info",
+    )
 
 if __name__ == "__main__":
     import uvicorn
