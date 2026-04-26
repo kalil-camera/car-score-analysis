@@ -174,6 +174,22 @@ class FIPEWorker(BaseWorker):
             )
 
 
+async def run_all_workers():
+    """Run all workers concurrently"""
+    workers = [
+        FIPEWorker(),
+        WebScrapingWorker(),
+        ReliabilityIndexWorker(),
+    ]
+
+    await asyncio.gather(*[worker.run() for worker in workers])
+
+
+def run_workers_sync():
+    """Run all workers (synchronous wrapper)"""
+    asyncio.run(run_all_workers())
+
+
 class WebScrapingWorker(BaseWorker):
     """Worker for web scraping vehicle data"""
 
@@ -293,6 +309,22 @@ class WebScrapingWorker(BaseWorker):
             )
 
 
+async def run_all_workers():
+    """Run all workers concurrently"""
+    workers = [
+        FIPEWorker(),
+        WebScrapingWorker(),
+        ReliabilityIndexWorker(),
+    ]
+
+    await asyncio.gather(*[worker.run() for worker in workers])
+
+
+def run_workers_sync():
+    """Run all workers (synchronous wrapper)"""
+    asyncio.run(run_all_workers())
+
+
 class ReliabilityIndexWorker(BaseWorker):
     """Worker for collecting reliability index data"""
 
@@ -393,3 +425,19 @@ class ReliabilityIndexWorker(BaseWorker):
                 end_time=end_time,
                 error_message=error_message,
             )
+
+
+async def run_all_workers():
+    """Run all workers concurrently"""
+    workers = [
+        FIPEWorker(),
+        WebScrapingWorker(),
+        ReliabilityIndexWorker(),
+    ]
+
+    await asyncio.gather(*[worker.run() for worker in workers])
+
+
+def run_workers_sync():
+    """Run all workers (synchronous wrapper)"""
+    asyncio.run(run_all_workers())
